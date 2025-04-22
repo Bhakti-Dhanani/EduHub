@@ -4,7 +4,9 @@
   "info": {
     "singularName": "category",
     "pluralName": "categories",
-    "displayName": "Category"
+    "displayName": "Category",
+    "name": "Category",
+    "description": "Categories for courses"
   },
   "options": {
     "draftAndPublish": false

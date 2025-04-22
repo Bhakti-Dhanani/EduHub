@@ -18,5 +18,21 @@ module.exports = {
         auth: false,
       },
     },
+    {
+      method: 'GET',
+      path: '/users/me',
+      handler: 'auth.getUser',
+      config: {
+        policies: [],
+      },
+    },
+    {
+      method: 'GET',
+      path: '/users',
+      handler: 'auth.listUsers',
+      config: {
+        policies: [],
+      },
+    },
   ],
 };

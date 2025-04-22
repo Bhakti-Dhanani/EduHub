@@ -19,6 +19,15 @@ interface CallbackRequest {
   password: string;
 }
 
+// Updated type definition for User to include role
+interface UserWithRole extends User {
+  role?: {
+    id: number; // Updated to match the expected type
+    name: string;
+    description?: string;
+  };
+}
+
 // @ts-ignore
 export default factories.createCoreController('api::auth.auth', ({ strapi }) => ({
   async register(ctx: AuthContext) {
@@ -83,7 +92,7 @@ export default factories.createCoreController('api::auth.auth', ({ strapi }) => 
         email: populatedUser.email,
         provider: populatedUser.provider,
         confirmed: populatedUser.confirmed,
-        role: populatedUser.role,
+        role: populatedUser.role || null, // Ensure role is safely accessed
       };
 
       ctx.created({ jwt, user: sanitizedUser });
@@ -131,7 +140,7 @@ export default factories.createCoreController('api::auth.auth', ({ strapi }) => 
         email: user.email,
         provider: user.provider,
         confirmed: user.confirmed,
-        role: user.role,
+        role: user.role || null, // Ensure role is safely accessed
       };
 
       ctx.send({ 
@@ -144,4 +153,56 @@ export default factories.createCoreController('api::auth.auth', ({ strapi }) => 
       return ctx.badRequest(error.message || "An error occurred during login");
     }
   },
-})); 
+
+  // Updated getUser function
+  async getUser(ctx) {
+    try {
+      const userId = ctx.state.user?.id;
+
+      if (!userId) {
+        return ctx.unauthorized("User not authenticated");
+      }
+
+      const user = await strapi.entityService.findOne("plugin::users-permissions.user", userId, {
+        populate: ["role"],
+      }) as UserWithRole;
+
+      if (!user) {
+        return ctx.notFound("User not found");
+      }
+
+      const sanitizedUser = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role || null, // Ensure role is safely accessed
+      };
+
+      ctx.send(sanitizedUser);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      return ctx.internalServerError("An error occurred while fetching user data");
+    }
+  },
+
+  // Updated listUsers function
+  async listUsers(ctx) {
+    try {
+      const users = await strapi.entityService.findMany("plugin::users-permissions.user", {
+        populate: ["role"],
+      }) as UserWithRole[];
+
+      const sanitizedUsers = users.map(user => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role || null, // Ensure role is safely accessed
+      }));
+
+      ctx.send(sanitizedUsers);
+    } catch (error) {
+      console.error("Error fetching users list:", error);
+      return ctx.internalServerError("An error occurred while fetching users list");
+    }
+  },
+}));

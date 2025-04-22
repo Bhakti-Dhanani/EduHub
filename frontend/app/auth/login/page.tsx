@@ -41,52 +41,23 @@ const Login = () => {
 
       localStorage.setItem('jwt', data.jwt);
       console.log('JWT token stored');
-      
-      if (data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('role', data.user.role?.name || '');
-        
-        if (data.user.role?.name === 'Instructor') {
+
+      // Removed user data storage
+      console.log('Redirecting based on role...');
+      switch (data.user.role?.name) {
+        case 'Instructor':
           router.push('/dashboard/instructor');
-        } else if (data.user.role?.name === 'Student') {
+          break;
+        case 'Student':
           router.push('/dashboard/student');
-        } else {
+          break;
+        default:
           router.push('/');
-        }
-        return;
-      }
-      
-      console.log('Fetching user data...');
-      const userResponse = await fetch('http://localhost:1337/api/users/me?populate=role', {
-        headers: {
-          'Authorization': `Bearer ${data.jwt}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!userResponse.ok) {
-        console.warn('Could not fetch user data, proceeding with limited information');
-        router.push('/');
-        return;
-      }
-
-      const userData = await userResponse.json();
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('role', userData.role?.name || '');
-      
-      if (userData.role?.name === 'Instructor') {
-        router.push('/dashboard/instructor');
-      } else if (userData.role?.name === 'Student') {
-        router.push('/dashboard/student');
-      } else {
-        router.push('/');
       }
     } catch (error) {
       console.error('Login error:', error);
       setError(error instanceof Error ? error.message : 'Login failed');
       localStorage.removeItem('jwt');
-      localStorage.removeItem('user');
-      localStorage.removeItem('role');
     } finally {
       setIsLoading(false);
     }

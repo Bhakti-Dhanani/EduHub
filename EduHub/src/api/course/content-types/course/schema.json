@@ -8,7 +8,7 @@
     "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "attributes": {
     "title": {
@@ -16,7 +16,7 @@
       "required": true
     },
     "description": {
-      "type": "blocks",
+      "type": "string",
       "required": true
     },
     "thumbnail": {
